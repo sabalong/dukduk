@@ -30,8 +30,9 @@ jobs:
 
       - name: Extract Linux amd64 Binary
         run: |
+          docker rm -f extract-linux 2>/dev/null || true
           docker create --name extract-linux fincent-api-builder:linux-amd64
-          docker cp extract-linux:/app/duckdb-tester/main ./fincent-api-linux-amd64
+          docker cp extract-linux:/app/main ./fincent-api-linux-amd64
           docker rm extract-linux
           chmod +x ./fincent-api-linux-amd64
 
