@@ -43,9 +43,6 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
-    strategy:
-      matrix:
-        arch: [arm64]
     steps:
       - uses: actions/checkout@v4
 
@@ -58,26 +55,16 @@ jobs:
         run: |
           brew install cmake git python3
 
-      - name: Build DuckDB Native Libraries
+      - name: Build DuckDB and App (macOS arm64)
         run: |
-          chmod +x scripts/build_duckdb_native.sh
-          export CMAKE_POLICY_VERSION_MINIMUM=3.5
-          ./scripts/build_duckdb_native.sh
-
-      - name: Build Go Application (macOS arm64)
-        run: |
-          cd appgo
-          CGO_ENABLED=1 \
-          CPPFLAGS="-DDUCKDB_STATIC_BUILD" \
-          CGO_LDFLAGS="-L../duckdblib -framework Compression -larrow_extension -larrow -lduckdb_fastpforlib -lduckdb_fmt -lduckdb_fsst -lduckdb_hyperloglog -lduckdb_mbedtls -lduckdb_miniz -lduckdb_pg_query -lduckdb_re2 -lduckdb_skiplistlib -lduckdb_utf8proc -lduckdb_yyjson -limdb -lduckdb_static -lduckdb_zstd -ljemalloc_extension -lparquet_extension -lstdc++ -lm -ldl -lminizip-ng -lcore_functions_extension -lz -lexcel_extension -lexpat" \
-          go build -tags=duckdb_use_static_lib -o ../fincent-api-macos-arm64 ./duckdb-tester/main.go
-          chmod +x ../fincent-api-macos-arm64
+          chmod +x scripts/build_multi_platform.sh
+          ./scripts/build_multi_platform.sh
 
       - name: Upload macOS arm64 Artifact
         uses: actions/upload-artifact@v4
         with:
           name: fincent-api-macos-arm64
-          path: ./fincent-api-macos-arm64
+          path: ./artifacts/fincent-api-macos-arm64
 
   release:
     needs: [build-linux, build-macos]
