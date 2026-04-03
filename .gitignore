@@ -1,0 +1,6 @@
+duckdblib/
+kennyduck/
+
+.build/
+artifacts/
+atmrthings/

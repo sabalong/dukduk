@@ -1,0 +1,64 @@
+include:
+  - project: &include_project devops/ci-templates # replace by one of above
+    ref: &include_ref 1.3.0-STABLE # https://gitlab.banksinarmas.com/devops/ci-templates/-/tags
+    file: /templates/main.gitlab-ci.yml  # Tag Base: https://gitlab.banksinarmas.com/devops/ci-templates/-/tree/main/templates
+
+variables:
+  RANCHER_PROJECT: "monorisk"
+
+build_duckdb_gosuse:
+  extends:
+    - image_build
+  stage: build
+  variables:
+    DOCKER_PUSH: '0'
+    DOCKER_FILE: '09meLeaNor5314'
+    IMAGETAG: $CI_COMMIT_SHA
+  after_script:
+    - docker create --name temp-container ${DOCKER_PUSH_URL}/${RANCHER_PROJECT}/${CI_PROJECT_NAME}:${IMAGETAG}
+    - docker cp temp-container:/duckdblib ./duckdblib
+    - docker rm temp-container
+  needs: []
+  artifacts:
+    paths:
+      - duckdblib/
+  rules:
+    - when: manual
+
+coverage_test:
+ allow_failure: true
+ stage: analysis  
+ script:
+  - echo EHLO
+
+build_duckdb_native_linux:
+  stage: build
+  image: registry.suse.com/bci/gcc:14
+  tags:
+    - linux
+  script:
+    - zypper install -y git make python3 zip unzip kernel-devel
+    - chmod +x scripts/build_duckdb_native.sh
+    - ./scripts/build_duckdb_native.sh
+  artifacts:
+    name: "duckdblib-linux-$CI_COMMIT_SHA"
+    paths:
+      - duckdblib/
+  rules:
+    - when: manual
+
+build_duckdb_native_macos:
+  stage: build
+  tags:
+    - macos
+  script:
+    - brew update
+    - brew install git make cmake python@3
+    - chmod +x scripts/build_duckdb_native.sh
+    - ./scripts/build_duckdb_native.sh
+  artifacts:
+    name: "duckdblib-macos-$CI_COMMIT_SHA"
+    paths:
+      - duckdblib/
+  rules:
+    - when: manual
