@@ -22,6 +22,8 @@ package_static_libs_zip() {
   local package_dir="${ARTIFACTS_DIR}/duckdb-static-libs-${platform}"
   local zip_path="${ARTIFACTS_DIR}/duckdb-static-libs-${platform}.zip"
   local lib_count
+  local extension_count
+  local extension_name
 
   if ! command -v zip >/dev/null 2>&1; then
     echo "Error: zip not installed. Required to package static libraries." >&2
@@ -37,7 +39,14 @@ package_static_libs_zip() {
   mkdir -p "${package_dir}/duckdblib"
 
   find "${source_dir}" -type f -name "*.a" -exec cp {} "${package_dir}/duckdblib/" \;
+  while IFS= read -r extension_file; do
+    extension_name="$(basename "${extension_file}" .duckdb_extension)"
+    mkdir -p "${package_dir}/duckdblib/extension/${extension_name}"
+    cp "${extension_file}" "${package_dir}/duckdblib/extension/${extension_name}/"
+  done < <(find "${source_dir}/extension" -mindepth 2 -maxdepth 2 -type f -name "*.duckdb_extension" 2>/dev/null | sort)
+
   lib_count="$(find "${package_dir}/duckdblib" -type f -name "*.a" | wc -l | tr -d ' ')"
+  extension_count="$(find "${package_dir}/duckdblib/extension" -type f -name "*.duckdb_extension" 2>/dev/null | wc -l | tr -d ' ')"
 
   if [[ "${lib_count}" == "0" ]]; then
     echo "Error: no static libraries found in ${source_dir}" >&2
@@ -48,13 +57,14 @@ package_static_libs_zip() {
     echo "platform=${platform}"
     echo "duckdb_version=${DUCKDB_VERSION}"
     echo "library_count=${lib_count}"
-    echo "layout=duckdblib/*.a"
+    echo "extension_count=${extension_count}"
+    echo "layout=duckdblib/*.a, duckdblib/extension/*/*.duckdb_extension"
   } > "${package_dir}/build-info.txt"
 
   (cd "${package_dir}" && zip -qr "${zip_path}" .)
   rm -rf "${package_dir}"
 
-  echo "✓ Static libraries zip: ${zip_path} (${lib_count} libraries)"
+  echo "✓ Static libraries zip: ${zip_path} (${lib_count} libraries, ${extension_count} extensions)"
 }
 
 build_linux_amd64() {
