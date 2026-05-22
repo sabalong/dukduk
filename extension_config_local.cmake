@@ -1,6 +1,10 @@
-# DuckDB v1.4.0-compatible extension pins.
-# Each external extension commit below points its duckdb submodule at
-# b8a06e4a22672e254cd0baa68a3dbed2eb51c56e, the DuckDB v1.4.0 tag.
+duckdb_extension_load(httpfs
+    LOAD_TESTS
+    GIT_URL https://github.com/duckdb/duckdb-httpfs
+    GIT_TAG 354d3f436a33f80f03a74419e76eb59459e19168
+    INCLUDE_DIR extension/httpfs/include
+)
+
 duckdb_extension_load(postgres_scanner
             DONT_LINK
             GIT_URL https://github.com/duckdb/duckdb-postgres

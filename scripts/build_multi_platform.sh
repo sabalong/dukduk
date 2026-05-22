@@ -207,7 +207,7 @@ build_macos_arm64() {
   pushd "${ROOT_DIR}/appgo" >/dev/null
   CGO_ENABLED=1 \
   CPPFLAGS="-DDUCKDB_STATIC_BUILD" \
-  CGO_LDFLAGS="-L./.duckdblib_build -lduckdb_bundle -lminizip-ng -lstdc++ -lm -ldl -lexpat -lz -lcompression -lnanoarrow -lnanoarrow_ipc -lflatccrt" \
+  CGO_LDFLAGS="-L./.duckdblib_build -lduckdb_bundle -lminizip-ng -lstdc++ -lm -ldl -lexpat -lz -lcompression -lnanoarrow -lnanoarrow_ipc -lflatccrt -framework Security -framework SystemConfiguration" \
   go build -tags=duckdb_use_static_lib -o "${ARTIFACTS_DIR}/fincent-api-macos-arm64" ./duckdb-tester/main.go
   popd >/dev/null
 
