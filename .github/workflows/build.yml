@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         arch: [amd64]
