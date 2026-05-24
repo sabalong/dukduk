@@ -12,11 +12,13 @@ func main() {
 	extpath := "../duckdblib/extension/postgres_scanner/postgres_scanner.duckdb_extension"
 	xlsExtPath := "../duckdblib/extension/excel/excel.duckdb_extension"
 	arrowExtPath := "../duckdblib/extension/nanoarrow/nanoarrow.duckdb_extension"
+	httpFsPath := "../duckdblib/extension/httpfs/httpfs.duckdb_extension"
 
 	extensions := []string{
 		extpath,
 		xlsExtPath,
 		arrowExtPath,
+		httpFsPath,
 	}
 
 	// duck, err := db.InitDuck(":memory:?allow_unsigned_extensions=true",
