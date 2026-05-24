@@ -3,14 +3,16 @@ set -euo pipefail
 
 # Multi-platform build script for fincent-api
 # Builds for Linux amd64, Ubuntu 22.04 amd64, and macOS arm64
-# Usage: ./scripts/build_multi_platform.sh
+# Usage: ./scripts/build_multi_platform.sh [all|linux-amd64|ubuntu-22.04-amd64|macos-arm64]
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ARTIFACTS_DIR="${ROOT_DIR}/artifacts"
 OS_NAME=$(uname -s)
 DUCKDB_VERSION="v1.4.0"
+TARGET="${1:-all}"
 
 echo "Building fincent-api for multiple platforms..."
+echo "Target: ${TARGET}"
 echo "Root directory: ${ROOT_DIR}"
 echo "Artifacts will be output to: ${ARTIFACTS_DIR}"
 
@@ -219,14 +221,32 @@ build_macos_arm64() {
 }
 
 # Main execution
-if [ "$OS_NAME" = "Darwin" ]; then
-  echo "Detected macOS runner. Building for macOS."
-  build_macos_arm64
-else
-  echo "Detected Linux runner. Building for Linux."
-  build_linux_amd64
-  build_ubuntu_2204_amd64
-fi
+case "${TARGET}" in
+  all)
+    if [ "$OS_NAME" = "Darwin" ]; then
+      echo "Detected macOS runner. Building for macOS."
+      build_macos_arm64
+    else
+      echo "Detected Linux runner. Building for Linux."
+      build_linux_amd64
+      build_ubuntu_2204_amd64
+    fi
+    ;;
+  linux-amd64)
+    build_linux_amd64
+    ;;
+  ubuntu-22.04-amd64)
+    build_ubuntu_2204_amd64
+    ;;
+  macos-arm64)
+    build_macos_arm64
+    ;;
+  *)
+    echo "Error: unknown target '${TARGET}'." >&2
+    echo "Usage: $0 [all|linux-amd64|ubuntu-22.04-amd64|macos-arm64]" >&2
+    exit 1
+    ;;
+esac
 
 echo ""
 echo "=== Build Summary ==="
