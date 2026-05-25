@@ -13,12 +13,14 @@ func main() {
 	xlsExtPath := "../duckdblib/extension/excel/excel.duckdb_extension"
 	arrowExtPath := "../duckdblib/extension/nanoarrow/nanoarrow.duckdb_extension"
 	httpFsPath := "../duckdblib/extension/httpfs/httpfs.duckdb_extension"
+	sshFsPath := "../duckdblib/extension/sshfs/sshfs.duckdb_extension"
 
 	extensions := []string{
 		extpath,
 		xlsExtPath,
 		arrowExtPath,
 		httpFsPath,
+		sshFsPath,
 	}
 
 	// duck, err := db.InitDuck(":memory:?allow_unsigned_extensions=true",

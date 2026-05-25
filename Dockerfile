@@ -18,7 +18,7 @@ WORKDIR /src/
 
 RUN curl -L https://github.com/apache/arrow-nanoarrow/releases/download/apache-arrow-nanoarrow-0.7.0/apache-arrow-nanoarrow-0.7.0.tar.gz | tar xz
 
-RUN zypper install -y libopenssl-3-devel git python3 zip unzip kernel-devel
+RUN zypper install -y libopenssl-3-devel libssh2-devel git python3 zip unzip kernel-devel
 
 COPY --from=cmake-downloader /src/CMake-3.30.9 /cmake/
 
@@ -31,7 +31,7 @@ RUN make install DESTDIR=/cmake-install
 
 FROM registry.suse.com/bci/gcc:14 as duckdb-builder
 
-RUN zypper install -y libopenssl-3-devel git python3 zip unzip kernel-devel
+RUN zypper install -y libopenssl-3-devel libssh2-devel git python3 zip unzip kernel-devel
 
 WORKDIR /src/
 
@@ -59,6 +59,9 @@ RUN cd duckdb && CMAKE_POLICY_VERSION_MINIMUM=3.5 make extension_configuration &
 FROM registry.suse.com/bci/gcc:14 as appbuilder
 
 ARG TARGETARCH
+
+RUN zypper install -y libssh2-devel
+
 RUN set -eux; \
 		case "${TARGETARCH}" in \
 			amd64|arm64) GO_ARCH="${TARGETARCH}" ;; \
@@ -83,10 +86,9 @@ COPY --from=duckdb-builder /src/duckdb/build/release/extension/ /app/duckdblib/e
 COPY ./appgo/ .
 
 
-RUN CGO_ENABLED=1 CPPFLAGS="-DDUCKDB_STATIC_BUILD" CGO_LDFLAGS="-L./duckdblib -lnanoarrow_extension -lnanoarrow -lnanoarrow_ipc -lflatccrt -lduckdb_fastpforlib -lduckdb_fmt -lduckdb_fsst -lduckdb_hyperloglog -lduckdb_mbedtls -lduckdb_miniz -lduckdb_pg_query -lduckdb_re2 -lduckdb_skiplistlib -lduckdb_utf8proc -lduckdb_yyjson -limdb -lduckdb_static -lhttpfs_extension -lduckdb_zstd -ljemalloc_extension -lparquet_extension -lstdc++ -lm -ldl -lminizip-ng -lcore_functions_extension -lz -lexcel_extension -lexpat -lcurl -lssl -lcrypto" go build -tags=duckdb_use_static_lib ./duckdb-tester/main.go
+RUN CGO_ENABLED=1 CPPFLAGS="-DDUCKDB_STATIC_BUILD" CGO_LDFLAGS="-L./duckdblib -lnanoarrow_extension -lnanoarrow -lnanoarrow_ipc -lflatccrt -lduckdb_fastpforlib -lduckdb_fmt -lduckdb_fsst -lduckdb_hyperloglog -lduckdb_mbedtls -lduckdb_miniz -lduckdb_pg_query -lduckdb_re2 -lduckdb_skiplistlib -lduckdb_utf8proc -lduckdb_yyjson -limdb -lduckdb_static -lsshfs_extension -lhttpfs_extension -lduckdb_zstd -ljemalloc_extension -lparquet_extension -lstdc++ -lm -ldl -lminizip-ng -lcore_functions_extension -lexcel_extension -lexpat -lcurl -lssh2 -lz -lssl -lcrypto" go build -tags=duckdb_use_static_lib ./duckdb-tester/main.go
 
 FROM registry.suse.com/bci/bci-base:15.7
 
 COPY --from=appbuilder /app/main main-app
 COPY --from=appbuilder /app/duckdblib/ /duckdblib/
-
